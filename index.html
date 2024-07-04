@@ -1,124 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,300italic,400italic,600,600italic,700italic,700' rel='stylesheet' type='text/css'>
-  
   <title>Scratch Card</title>
   <style type="text/css">
-html {
-  box-sizing: border-box;
-}
-*, *:before, *:after {
-  box-sizing: inherit;
-}
-.scratchpad{
-  width: 450px;
-  height: 800px;
-  border: solid 10px #FFFFFF;
-  margin:0 auto;
-}
-body {
-    background:#efefef;
-}
-.scratch-container {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  width:100%;
-}
-@media only screen and (max-width : 480px) {
-  .scratchpad {width:400px;height:396px;}
-  .scratch-container {width:400px !important;}
-}
+    html {
+      box-sizing: border-box;
+    }
 
-/* Custom, iPhone Retina */ 
-@media only screen and (max-width : 450px) {
-  .scratchpad {width:450px;height:800px;}
-  .scratch-container {width:450px !important;}
-}
-.promo-container {
-	background:#FFF;
-	border-radius:5px;
-	-moz-border-radius:5px;
-	-webkit-border-radius:5px;
-	width:450px;
-	padding:20px;
-	margin:0 auto;
-	text-align:center;
-	font-family:'Open Sans', Arial,Sans-serif;
-	color:#333;
-	font-size:16px;
-	margin-top:20px;
-}
-.btn {
-  background:#56CFD2;
-  color:#FFF;
-  padding:10px 25px;
-  display:inline-block;
-  margin-top:15px;
-  text-decoration:none;
-  font-weight:600;
-  text-transform:uppercase;
-  border-radius:3px;
-  -moz-border-radius:3px;
-  -webkit-border-radiuss:3px;
-}
+    *,
+    *:before,
+    *:after {
+      box-sizing: inherit;
+    }
+
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+    }
+
+    .sc__wrapper {
+      width: auto;
+      height: 100vh;
+      max-width: calc(100vh * (1080 / 1920));
+      aspect-ratio: 1080 / 1920;
+      border: 5px solid white;
+      position: relative;
+    }
+
+    .sc__container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .sc__container>img {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .sc__container canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .sc__infos {
+      text-align: center;
+      height: 40px;
+      line-height: 40px;
+      margin-top: 5px;
+      font-weight: bold;
+      font-size: 18px;
+    }
   </style>
-
 </head>
+
 <body>
-<div class="scratch-container">
-  <div id="promo" class="scratchpad"></div>
-</div>
-<div class="promo-container" style="display:none;">
-  <div class="promo-code"></div>
-  <a href="http://jennamolby.com" target="_blank" class="btn">Register Now</a>
-</div>
+  <div class="sc__wrapper">
+    <div id="js--sc--container" class="sc__container">
+      <!-- background image insert here by scratchcard-js -->
+      <!-- canvas generate here -->
+    </div>
+  </div>
 
+  <script type="text/javascript" src="./js/scratchcard.min.js"></script>
+  <script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', () => {
+      const scContainer = document.getElementById('js--sc--container');
+      const wrapper = document.querySelector('.sc__wrapper');
+      const sc = new ScratchCard('#js--sc--container', {
+        scratchType: SCRATCH_TYPE.LINE,
+        containerWidth: wrapper.clientWidth,
+        containerHeight: wrapper.clientHeight,
+        imageForwardSrc: './images/front.jpeg',
+        imageBackgroundSrc: './images/back.jpeg',
+        htmlBackground: '',
+        clearZoneRadius: 20,
+        nPoints: 0,
+        pointSize: 10
+      });
 
-<script src="https://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
-<script type="text/javascript" src="./js/wScratchPad.min.js"></script>
+      // Init
+      sc.init().then(() => {
+        sc.canvas.addEventListener('scratch.move', () => {
+          // Add your custom logic here
+        });
+      }).catch((error) => {
+        console.error(error);
+      });
+    });
 
-<script type="text/javascript">
+    window.addEventListener('resize', () => {
+      location.reload();
+    });
+  </script>
+</body>
 
-var promoCode = '';
-var bg1 = 'images/back.jpeg';
-var bg2 = 'images/back.jpeg';
-var bg3 = 'images/back.jpeg';
-var bgArray= [ bg1, bg2, bg3 ],
-selectBG = bgArray[Math.floor(Math.random() * bgArray.length)];
-if (selectBG == bg1) {
-    promoCode = 'SCRATCH400';
-  } else if (selectBG == bg2) {
-    promoCode = 'SCRATCH500';
-  } if (selectBG == bg3) {
-    var promoCode = '';
-  }
-$('#promo').wScratchPad({
-    // the size of the eraser
-    size        : 10,    
-    // the randomized scratch image   
-    bg:  selectBG,
-    // give real-time updates
-    realtime    : true, 
-    // The overlay image
-    fg: 'images/front.jpeg',
-    // The cursor (coin) image
-    'cursor': 'url("") 5 5, default',
-    
-    scratchMove: function (e, percent) {
-        // Show the plain-text promo code and call-to-action when the scratch area is 50% scratched
-        if ((percent > 50) && (promoCode != '')) {
-          $('.promo-container').show();
-          $('body').removeClass('not-selectable');
-          $('.promo-code').html('Your code is: ' + promoCode);
-        }
-      }
- });
-</script>
-      
+</html>
