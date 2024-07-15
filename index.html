@@ -46,6 +46,7 @@
       position: absolute;
       width: 100%;
       height: 100%;
+      display: none; /* Initially hide the background image */
     }
 
     .sc__container canvas {
@@ -61,7 +62,7 @@
 <body>
   <div class="sc__wrapper">
     <div id="js--sc--container" class="sc__container">
-      <img src="./images/back.jpeg" alt="Background Image">
+      <img id="backgroundImage" src="./images/back.jpeg" alt="Background Image">
       <canvas id="scratchCanvas"></canvas>
     </div>
   </div>
@@ -70,6 +71,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       const canvas = document.getElementById('scratchCanvas');
       const container = document.getElementById('js--sc--container');
+      const backgroundImage = document.getElementById('backgroundImage');
       const ctx = canvas.getContext('2d');
 
       // Get the device pixel ratio
@@ -87,6 +89,9 @@
       frontImage.onload = () => {
         ctx.drawImage(frontImage, 0, 0, containerWidth, containerHeight);
         ctx.globalCompositeOperation = 'destination-out';
+
+        // Show the background image only after the front image is loaded
+        backgroundImage.style.display = 'block';
 
         // Add event listeners for scratch functionality
         canvas.addEventListener('mousedown', startScratch);
