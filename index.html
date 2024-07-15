@@ -90,7 +90,7 @@
 
         // Add event listeners for scratch functionality
         canvas.addEventListener('mousedown', startScratch);
-        canvas.addEventListener('touchstart', startScratch);
+        canvas.addEventListener('touchstart', startScratch, { passive: false });
 
         canvas.addEventListener('mouseup', endScratch);
         canvas.addEventListener('mouseleave', endScratch);
@@ -101,10 +101,11 @@
       let isScratching = false;
 
       function startScratch(event) {
+        event.preventDefault();
         isScratching = true;
         scratch(event);
         canvas.addEventListener('mousemove', scratch);
-        canvas.addEventListener('touchmove', scratch);
+        canvas.addEventListener('touchmove', scratch, { passive: false });
       }
 
       function endScratch() {
@@ -115,6 +116,8 @@
 
       function scratch(event) {
         if (!isScratching) return;
+
+        event.preventDefault();
 
         const rect = canvas.getBoundingClientRect();
         const scale = devicePixelRatio;
