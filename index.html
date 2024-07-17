@@ -42,10 +42,11 @@
       overflow: hidden;
     }
 
-    .sc__container>img {
+    .sc__container img {
       position: absolute;
       width: 100%;
       height: 100%;
+      display: none; /* Initially hide the background image */
     }
 
     .sc__container canvas {
@@ -55,51 +56,93 @@
       width: 100%;
       height: 100%;
     }
-
-    .sc__infos {
-      text-align: center;
-      height: 40px;
-      line-height: 40px;
-      margin-top: 5px;
-      font-weight: bold;
-      font-size: 18px;
-    }
   </style>
 </head>
 
 <body>
   <div class="sc__wrapper">
     <div id="js--sc--container" class="sc__container">
-      <!-- background image insert here by scratchcard-js -->
-      <!-- canvas generate here -->
+      <img id="backgroundImage" src="./images/back.jpeg" alt="Background Image">
+      <canvas id="scratchCanvas"></canvas>
     </div>
   </div>
 
-  <script type="text/javascript" src="./js/scratchcard.min.js"></script>
   <script type="text/javascript">
     document.addEventListener('DOMContentLoaded', () => {
-      const scContainer = document.getElementById('js--sc--container');
-      const wrapper = document.querySelector('.sc__wrapper');
-      const sc = new ScratchCard('#js--sc--container', {
-        scratchType: SCRATCH_TYPE.LINE,
-        containerWidth: wrapper.clientWidth,
-        containerHeight: wrapper.clientHeight,
-        imageForwardSrc: './images/front.jpeg',
-        imageBackgroundSrc: './images/back.jpeg',
-        htmlBackground: '',
-        clearZoneRadius: 20,
-        nPoints: 0,
-        pointSize: 10
-      });
+      const canvas = document.getElementById('scratchCanvas');
+      const container = document.getElementById('js--sc--container');
+      const backgroundImage = document.getElementById('backgroundImage');
+      const ctx = canvas.getContext('2d');
 
-      // Init
-      sc.init().then(() => {
-        sc.canvas.addEventListener('scratch.move', () => {
-          // Add your custom logic here
-        });
-      }).catch((error) => {
-        console.error(error);
-      });
+      // Get the device pixel ratio
+      const devicePixelRatio = window.devicePixelRatio || 1;
+
+      // Set canvas dimensions
+      const containerWidth = container.clientWidth * devicePixelRatio;
+      const containerHeight = container.clientHeight * devicePixelRatio;
+      canvas.width = containerWidth;
+      canvas.height = containerHeight;
+
+      // Load the front image
+      const frontImage = new Image();
+      frontImage.src = './images/front.jpeg';
+      frontImage.onload = () => {
+        ctx.drawImage(frontImage, 0, 0, containerWidth, containerHeight);
+        ctx.globalCompositeOperation = 'destination-out';
+
+        // Show the background image only after the front image is loaded
+        backgroundImage.style.display = 'block';
+
+        // Add event listeners for scratch functionality
+        canvas.addEventListener('mousedown', startScratch);
+        canvas.addEventListener('touchstart', startScratch, { passive: false });
+
+        canvas.addEventListener('mouseup', endScratch);
+        canvas.addEventListener('mouseleave', endScratch);
+        canvas.addEventListener('touchend', endScratch);
+        canvas.addEventListener('touchcancel', endScratch);
+      };
+
+      let isScratching = false;
+
+      function startScratch(event) {
+        event.preventDefault();
+        isScratching = true;
+        scratch(event);
+        canvas.addEventListener('mousemove', scratch);
+        canvas.addEventListener('touchmove', scratch, { passive: false });
+      }
+
+      function endScratch() {
+        isScratching = false;
+        canvas.removeEventListener('mousemove', scratch);
+        canvas.removeEventListener('touchmove', scratch);
+      }
+
+      function scratch(event) {
+        if (!isScratching) return;
+
+        event.preventDefault();
+
+        const rect = canvas.getBoundingClientRect();
+        const scale = devicePixelRatio;
+
+        let clientX, clientY;
+        if (event.touches) {
+          clientX = event.touches[0].clientX;
+          clientY = event.touches[0].clientY;
+        } else {
+          clientX = event.clientX;
+          clientY = event.clientY;
+        }
+
+        const x = (clientX - rect.left) * scale;
+        const y = (clientY - rect.top) * scale;
+
+        ctx.beginPath();
+        ctx.arc(x, y, 20 * scale, 0, 2 * Math.PI);
+        ctx.fill();
+      }
     });
 
     window.addEventListener('resize', () => {
